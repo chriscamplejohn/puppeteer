@@ -1,23 +1,23 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 
-if (process.argv.length < 7) {
-  console.log("Please specify a Structurizr URL, username, password, workspace ID, and software system name.");
-  console.log("Usage: <structurizrUrl> <username> <password> <workspaceId> <softwareSystemName>")
+if (process.argv.length < 4) {
+  console.log("Please specify a Structurizr URL and software system name.");
+  console.log("Usage: <structurizrUrl> <softwareSystemName>")
   process.exit(1);
 }
 
 const structurizrUrl = process.argv[2];
-const username = process.argv[3];
-const password = process.argv[4];
+const username = process.env.STRUCTURIZR_USERNAME;
+const password = process.env.STRUCTURIZR_PASSWORD;
 
-const workspaceId = process.argv[5];
+const workspaceId = process.env.STRUCTURIZR_WORKSPACE;
 if (!new RegExp('^[0-9]+$').test(workspaceId)) {
   console.log("The workspace ID must be a non-negative integer.");
   process.exit(1);
 }
 
-const softwareSystemName = process.argv[6];
+const softwareSystemName = process.argv[3];
 
 const url = structurizrUrl + '/workspace/' + workspaceId + '/documentation#%2F' + softwareSystemName + ':All';
 
@@ -37,10 +37,10 @@ console.log(url);
 
   console.log("Opening documentation in workspace " + workspaceId + "...");
 
-  await page.goto(url, { waitUntil: 'domcontentloaded' });
+  await page.goto(url, { waitUntil: 'load' });
 
   await page.exposeFunction('saveHtml', (content) => {
-    const filename = 'structurizr-' + workspaceId + '-documentation.html';
+    const filename = 'structurizr-' + workspaceId + '-' + softwareSystemName + '-documentation.html';
     console.log("Writing " + filename);
     fs.writeFile(filename, content, 'utf8', function (err) {
       if (err) throw err;
@@ -50,6 +50,8 @@ console.log(url);
   });
 
   console.log("Exporting documentation as offline HTML page...");
+  const date = Date.now();
+  
   await exportDocumentation(page);
 })();
 

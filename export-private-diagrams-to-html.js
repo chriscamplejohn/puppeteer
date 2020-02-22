@@ -1,17 +1,17 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 
-if (process.argv.length < 6) {
+if (process.argv.length < 3) {
   console.log("Please specify a Structurizr URL, username, password, and workspace ID.");
-  console.log("Usage: <structurizrUrl> <username> <password> <workspaceId>")
+  console.log("Usage: <structurizrUrl>")
   process.exit(1);
 }
 
 const structurizrUrl = process.argv[2];
-const username = process.argv[3];
-const password = process.argv[4];
+const username = process.env.STRUCTURIZR_USERNAME;
+const password = process.env.STRUCTURIZR_PASSWORD;
 
-const workspaceId = process.argv[5];
+const workspaceId = process.env.STRUCTURIZR_WORKSPACE;
 if (!new RegExp('^[0-9]+$').test(workspaceId)) {
   console.log("The workspace ID must be a non-negative integer.");
   process.exit(1);
